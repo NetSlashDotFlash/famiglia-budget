@@ -8,8 +8,8 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="Budget Famiglia" />
   <title>Budget Famiglia</title>
-  <link rel="manifest" href="manifest.json" />
-  <link rel="apple-touch-icon" href="icon-192.png" />
+  <link rel="manifest" href="/famiglia-budget/manifest.json" />
+  <link rel="apple-touch-icon" href="/famiglia-budget/icon-192.png" />
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
     html,body{height:100%;overflow:hidden}
@@ -657,7 +657,7 @@ function doSave(){
 }
 
 if('serviceWorker' in navigator){
-  window.addEventListener('load',()=>{ navigator.serviceWorker.register('sw.js').catch(()=>{}); });
+  window.addEventListener('load',()=>{ navigator.serviceWorker.register('/famiglia-budget/sw.js', {scope: '/famiglia-budget/'}).catch(()=>{}); });
 }
 </script>
 </body>

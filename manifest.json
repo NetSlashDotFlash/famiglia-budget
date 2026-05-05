@@ -2,22 +2,60 @@
   "name": "Budget Famiglia",
   "short_name": "Budget",
   "description": "Gestione spese familiari mensili",
-  "start_url": "/famiglia-budget/",
+  "start_url": "/famiglia-budget/index.html",
   "scope": "/famiglia-budget/",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#1a3d7a",
   "theme_color": "#1a3d7a",
   "lang": "it",
+  "categories": ["finance", "productivity"],
+  "screenshots": [],
   "icons": [
     {
-      "src": "icon-192.png",
-      "sizes": "192x192",
+      "src": "/famiglia-budget/icon-72.png",
+      "sizes": "72x72",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
-      "src": "icon-512.png",
+      "src": "/famiglia-budget/icon-96.png",
+      "sizes": "96x96",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/famiglia-budget/icon-128.png",
+      "sizes": "128x128",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/famiglia-budget/icon-144.png",
+      "sizes": "144x144",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/famiglia-budget/icon-152.png",
+      "sizes": "152x152",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/famiglia-budget/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/famiglia-budget/icon-384.png",
+      "sizes": "384x384",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/famiglia-budget/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
