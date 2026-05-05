@@ -16,7 +16,25 @@
     body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f0f0f0;-webkit-tap-highlight-color:transparent}
     .app{max-width:430px;margin:0 auto;background:#f0f0f0;height:100vh;display:flex;flex-direction:column}
 
-    .topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 16px 12px;background:#fff;border-bottom:1px solid #ddd;flex-shrink:0}
+    /* LOGIN SCREEN */
+    #login-screen{position:absolute;inset:0;background:#1a3d7a;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:100;max-width:430px;margin:0 auto}
+    .login-logo{font-size:56px;margin-bottom:16px}
+    .login-title{font-size:26px;font-weight:600;color:#fff;margin-bottom:6px}
+    .login-sub{font-size:14px;color:rgba(255,255,255,.65);margin-bottom:48px;text-align:center;padding:0 32px}
+    .login-btn{display:flex;align-items:center;gap:12px;background:#fff;color:#333;border:none;border-radius:28px;padding:14px 28px;font-size:16px;font-weight:500;cursor:pointer;box-shadow:0 2px 12px rgba(0,0,0,.25)}
+    .login-btn:active{transform:scale(.97)}
+    .login-btn img{width:22px;height:22px}
+    .login-error{color:#ff8a80;font-size:13px;margin-top:20px;text-align:center}
+
+    /* USER BAR */
+    .user-bar{display:flex;align-items:center;gap:8px;padding:6px 16px;background:#fff;border-bottom:1px solid #eee;flex-shrink:0}
+    .user-avatar{width:26px;height:26px;border-radius:50%;object-fit:cover}
+    .user-name{font-size:13px;color:#555;flex:1}
+    .user-sync{font-size:11px;color:#aaa;margin-right:4px}
+    .logout-btn{background:none;border:none;font-size:12px;color:#888;cursor:pointer;padding:4px 8px;border-radius:6px}
+    .logout-btn:active{background:#eee}
+
+    .topbar{display:flex;align-items:center;justify-content:space-between;padding:12px 16px 10px;background:#fff;border-bottom:1px solid #ddd;flex-shrink:0}
     .month-nav{display:flex;align-items:center}
     .mnbtn{background:none;border:none;font-size:22px;cursor:pointer;color:#888;padding:2px 10px;border-radius:8px}
     .mnbtn:active{background:#eee}
@@ -122,11 +140,37 @@
     .prev-detail{font-size:12px;color:#4a8020;margin-top:3px}
     .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:#333;color:#fff;padding:10px 20px;border-radius:20px;font-size:13px;opacity:0;transition:all .3s;z-index:999;white-space:nowrap}
     .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+    .loading{position:absolute;inset:0;background:#1a3d7a;display:flex;align-items:center;justify-content:center;z-index:200;max-width:430px;margin:0 auto}
+    .loading-spinner{width:40px;height:40px;border:3px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
   </style>
 </head>
 <body>
 <div class="app">
-  <div id="main-screen" style="display:flex;flex-direction:column;flex:1;overflow:hidden">
+
+  <!-- LOADING -->
+  <div id="loading-screen" class="loading"><div class="loading-spinner"></div></div>
+
+  <!-- LOGIN -->
+  <div id="login-screen" style="display:none">
+    <div class="login-logo">💶</div>
+    <div class="login-title">Budget Famiglia</div>
+    <div class="login-sub">Gestisci le spese familiari.<br>I tuoi dati sono sempre sincronizzati.</div>
+    <button class="login-btn" onclick="doLogin()">
+      <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" />
+      Accedi con Google
+    </button>
+    <div class="login-error" id="login-error"></div>
+  </div>
+
+  <!-- MAIN -->
+  <div id="main-screen" style="display:none;flex-direction:column;flex:1;overflow:hidden">
+    <div class="user-bar">
+      <img class="user-avatar" id="user-avatar" src="" alt="" />
+      <span class="user-name" id="user-name"></span>
+      <span class="user-sync" id="sync-status">●</span>
+      <button class="logout-btn" onclick="doLogout()">Esci</button>
+    </div>
     <div class="topbar">
       <div class="month-nav">
         <button class="mnbtn" onclick="changeMonth(-1)">‹</button>
@@ -170,6 +214,7 @@
     </div>
   </div>
 
+  <!-- INSERT -->
   <div class="insert-screen" id="insert-screen">
     <div class="ins-topbar">
       <button class="ins-back" onclick="showMain()">← Indietro</button>
@@ -222,11 +267,30 @@
       </div>
     </div>
   </div>
+
 </div>
 <div class="toast" id="toast"></div>
 
+<!-- Firebase (CDN compat) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+
 <script>
-const STORAGE_KEY = 'famiglia_budget_v2';
+// ── FIREBASE CONFIG ───────────────────────────────────────────────────────────
+const firebaseConfig = {
+  apiKey:            "AIzaSyDJ-TALjJrYQJ6qzv5le5TRJb1weP619bs",
+  authDomain:        "famiglia-budget.firebaseapp.com",
+  projectId:         "famiglia-budget",
+  storageBucket:     "famiglia-budget.firebasestorage.app",
+  messagingSenderId: "822168307915",
+  appId:             "1:822168307915:web:dd0c4f70d99287ebecf34e"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db   = firebase.firestore();
+
+// ── COSTANTI ──────────────────────────────────────────────────────────────────
 const MONTHS  = ['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
 const DAYS_IT = ['Dom','Lun','Mar','Mer','Gio','Ven','Sab'];
 
@@ -240,12 +304,12 @@ const CATS = {
     {group:'📦 Altro',      items:['Altro']},
   ],
   superfluous:[
-    {group:'🍽️ Svago',       items:['Ristorante','Pizzeria','Bar / Caffè','Cinema','Teatro','Concerti','Viaggi','Hotel','Altro svago']},
-    {group:'🥡 Food delivery',items:['Take away','Consegna a domicilio','Altro food delivery']},
-    {group:'🛍️ Shopping',    items:['Abbigliamento','Scarpe','Elettronica','Arredamento','Libri','Giocattoli','Altro shopping']},
-    {group:'📱 Abbonamenti',  items:['Netflix','Spotify','Amazon Prime','Disney+','Sky','Giornali','Riviste','Altro abbonamenti']},
-    {group:'🎯 Hobby',       items:['Sport','Fotografia','Musica','Videogiochi','Giardinaggio','Bricolage','Altro hobby']},
-    {group:'📦 Altro',       items:['Altro']},
+    {group:'🍽️ Svago',        items:['Ristorante','Pizzeria','Bar / Caffè','Cinema','Teatro','Concerti','Viaggi','Hotel','Altro svago']},
+    {group:'🥡 Food delivery', items:['Take away','Consegna a domicilio','Altro food delivery']},
+    {group:'🛍️ Shopping',     items:['Abbigliamento','Scarpe','Elettronica','Arredamento','Libri','Giocattoli','Altro shopping']},
+    {group:'📱 Abbonamenti',   items:['Netflix','Spotify','Amazon Prime','Disney+','Sky','Giornali','Riviste','Altro abbonamenti']},
+    {group:'🎯 Hobby',        items:['Sport','Fotografia','Musica','Videogiochi','Giardinaggio','Bricolage','Altro hobby']},
+    {group:'📦 Altro',        items:['Altro']},
   ],
   income:[
     {group:'💼 Lavoro',  items:['Stipendio','Bonus','Straordinari','Rimborso spese','Freelance','Pensione','Altro lavoro']},
@@ -253,7 +317,6 @@ const CATS = {
     {group:'🎁 Altro',   items:['Regalo ricevuto','Vendita oggetti','Rimborso assicurazione','Vincita','Altro']},
   ]
 };
-
 const ICONS = {
   'Affitto':'🏠','Mutuo':'🏠','Bolletta luce':'💡','Bolletta gas':'🔥','Internet':'📡','Condominio':'🏢','Acqua':'💧','Telefono fisso':'☎️',
   'Carburante':'⛽','Assicurazione auto':'🚗','Rata auto':'🚗','Parcheggio':'🅿️','Bollo':'📋','Manutenzione auto':'🔧',
@@ -271,36 +334,110 @@ const ICONS = {
 };
 function icon(n){ return ICONS[n]||'•'; }
 
+// ── STATO ─────────────────────────────────────────────────────────────────────
 let curYear  = new Date().getFullYear();
 let curMonth = new Date().getMonth();
 let selId    = null;
-let data     = {};
-let ins      = {type:null,name:'',amount:0};
+let data     = {};      // cache locale: { "2025-4": [{...}] }
+let currentUser = null;
+let unsubscribe = null; // listener Firestore
+let ins = {type:null,name:'',amount:0};
 
-function saveData(){ try{localStorage.setItem(STORAGE_KEY,JSON.stringify(data));}catch(e){} }
-function loadData(){ try{const r=localStorage.getItem(STORAGE_KEY);if(r)data=JSON.parse(r);}catch(e){data={};} }
+// ── UTILS ─────────────────────────────────────────────────────────────────────
 function fmt(n){ return '€ '+Math.abs(n).toFixed(2).replace('.',','); }
 function fmtS(n){ return (n>=0?'+ ':'-')+fmt(n); }
 function key(y,m){ return `${y}-${m}`; }
-
 function todayStr(){
   const d=new Date();
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
-function fmtDate(dateStr){
-  if(!dateStr||dateStr==='senza-data') return 'Senza data';
-  const [y,m,d]=dateStr.split('-').map(Number);
+function fmtDate(ds){
+  if(!ds||ds==='senza-data') return 'Senza data';
+  const [y,m,d]=ds.split('-').map(Number);
   const dt=new Date(y,m-1,d);
   return `${DAYS_IT[dt.getDay()]} ${d} ${MONTHS[m-1]}`;
 }
 function showToast(msg){
   const t=document.getElementById('toast');
   t.textContent=msg; t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'),2000);
+  setTimeout(()=>t.classList.remove('show'),2200);
+}
+function setSyncStatus(ok){
+  const el=document.getElementById('sync-status');
+  if(!el) return;
+  el.textContent='●';
+  el.style.color=ok?'#3a9a20':'#e07820';
+  el.title=ok?'Dati sincronizzati':'Sincronizzazione in corso…';
 }
 
-// ── MEDIE MENSILI PER CATEGORIA ───────────────────────────────────────────────
-// Restituisce la spesa media mensile per una categoria nei mesi passati (escluso mese corrente)
+// ── FIRESTORE ─────────────────────────────────────────────────────────────────
+function userCol(){ return db.collection('users').doc(currentUser.uid).collection('entries'); }
+
+// Ascolta in realtime tutte le voci dell'utente
+function startListener(){
+  if(unsubscribe) unsubscribe();
+  setSyncStatus(false);
+  unsubscribe = userCol().onSnapshot(snap=>{
+    data={};
+    snap.forEach(doc=>{
+      const e=doc.data();
+      const k=key(e.year,e.month);
+      if(!data[k]) data[k]=[];
+      data[k].push({...e, _id:doc.id});
+    });
+    setSyncStatus(true);
+    renderMain();
+  }, err=>{ console.error(err); setSyncStatus(false); });
+}
+
+async function addEntry(entry){
+  setSyncStatus(false);
+  try{
+    await userCol().add(entry);
+    // renderMain() scatta via onSnapshot
+  }catch(e){ showToast('Errore salvataggio'); console.error(e); setSyncStatus(true); }
+}
+
+async function deleteEntry(id){
+  setSyncStatus(false);
+  try{
+    await userCol().doc(id).delete();
+  }catch(e){ showToast('Errore eliminazione'); console.error(e); setSyncStatus(true); }
+}
+
+// ── AUTH ──────────────────────────────────────────────────────────────────────
+function doLogin(){
+  document.getElementById('login-error').textContent='';
+  const provider=new firebase.auth.GoogleAuthProvider();
+  auth.signInWithPopup(provider).catch(err=>{
+    document.getElementById('login-error').textContent='Accesso non riuscito. Riprova.';
+    console.error(err);
+  });
+}
+function doLogout(){
+  if(unsubscribe){ unsubscribe(); unsubscribe=null; }
+  data={};
+  auth.signOut();
+}
+
+auth.onAuthStateChanged(user=>{
+  document.getElementById('loading-screen').style.display='none';
+  if(user){
+    currentUser=user;
+    document.getElementById('login-screen').style.display='none';
+    const ms=document.getElementById('main-screen');
+    ms.style.display='flex';
+    document.getElementById('user-avatar').src=user.photoURL||'';
+    document.getElementById('user-name').textContent=user.displayName||user.email;
+    startListener();
+  } else {
+    currentUser=null;
+    document.getElementById('main-screen').style.display='none';
+    document.getElementById('login-screen').style.display='flex';
+  }
+});
+
+// ── MEDIE ─────────────────────────────────────────────────────────────────────
 function catMonthlyAvg(cat){
   const ck=key(curYear,curMonth);
   const byM={};
@@ -308,11 +445,9 @@ function catMonthlyAvg(cat){
     if(k===ck) return;
     arr.filter(e=>e.cat===cat).forEach(e=>{ byM[k]=(byM[k]||0)+e.amount; });
   });
-  const vals=Object.values(byM);
-  return vals.length ? vals.reduce((s,v)=>s+v,0)/vals.length : null;
+  const v=Object.values(byM);
+  return v.length ? v.reduce((s,x)=>s+x,0)/v.length : null;
 }
-
-// Media mensile per singola voce (nome+cat) nei mesi passati
 function itemMonthlyAvg(name,cat){
   const ck=key(curYear,curMonth);
   const byM={};
@@ -320,10 +455,9 @@ function itemMonthlyAvg(name,cat){
     if(k===ck) return;
     arr.filter(e=>e.name===name&&e.cat===cat).forEach(e=>{ byM[k]=(byM[k]||0)+e.amount; });
   });
-  const vals=Object.values(byM);
-  return vals.length ? vals.reduce((s,v)=>s+v,0)/vals.length : null;
+  const v=Object.values(byM);
+  return v.length ? v.reduce((s,x)=>s+x,0)/v.length : null;
 }
-
 function nHistMonths(){
   const ck=key(curYear,curMonth);
   return Object.keys(data).filter(k=>k!==ck&&data[k]&&data[k].length>0).length;
@@ -359,7 +493,6 @@ function renderMain(){
   const tOut=tEss+tSup, bal=tInc-tOut, ref=tInc||1;
   const nHist=nHistMonths();
 
-  // Hero
   const heroEl=document.getElementById('hero-bal');
   heroEl.textContent=(bal>=0?'':'- ')+fmt(bal);
   heroEl.className='hero-val'+(bal<0?' neg':'');
@@ -377,7 +510,6 @@ function renderMain(){
     hAvg.className='hero-avg '+heroCls(bal,avgBal);
   } else hAvg.textContent='';
 
-  // Barra entrate = 100%
   document.getElementById('b-in').textContent=fmt(tInc);
   document.getElementById('bf-inc').style.width='100%';
   const bavgIn=document.getElementById('bavg-in');
@@ -387,7 +519,6 @@ function renderMain(){
     bavgIn.className='bar-avg '+avgCls(tInc,avgInc,'income');
   } else bavgIn.textContent='';
 
-  // Barra uscite bipartita
   const outPct=Math.min(100,Math.round(tOut/ref*100));
   const essPct=tOut>0?Math.round(tEss/tOut*outPct):0;
   document.getElementById('b-out').textContent=fmt(tOut);
@@ -402,7 +533,6 @@ function renderMain(){
     bavgOut.className='bar-avg '+avgCls(tOut,avgOut,'expense');
   } else bavgOut.textContent='';
 
-  // Lista per data decrescente
   const lw=document.getElementById('list-wrap');
   if(!entries.length){lw.innerHTML='<div class="list-empty">Nessuna voce<br>premi + per aggiungere</div>';return;}
 
@@ -411,9 +541,8 @@ function renderMain(){
   const sortedKeys=Object.keys(groups).sort((a,b)=>b.localeCompare(a));
 
   lw.innerHTML=sortedKeys.map(dk=>{
-    const label=fmtDate(dk);
     return `<div class="date-group">
-      <div class="date-hdr">${label}</div>
+      <div class="date-hdr">${fmtDate(dk)}</div>
       ${groups[dk].map(e=>{
         const cls=e.cat;
         const sub={essential:'Essenziale',superfluous:'Superflua',income:'Entrata'}[e.cat];
@@ -450,9 +579,9 @@ function renderMain(){
 function selItem(id){ selId=(selId===id?null:id); renderMain(); }
 function delItem(ev,id){
   ev.stopPropagation();
-  const k=key(curYear,curMonth);
-  if(data[k]) data[k]=data[k].filter(e=>e._id!==id);
-  saveData(); selId=null; renderMain(); showToast('Voce eliminata');
+  selId=null;
+  deleteEntry(id);
+  showToast('Voce eliminata');
 }
 function changeMonth(d){
   curMonth+=d;
@@ -461,6 +590,7 @@ function changeMonth(d){
   selId=null; renderMain();
 }
 
+// ── INSERT ────────────────────────────────────────────────────────────────────
 function showInsert(){
   ins={type:null,name:'',amount:0};
   const today=new Date();
@@ -512,14 +642,19 @@ function checkSave(){
   document.getElementById('ins-save').disabled=!(ins.type&&ins.name&&ins.amount>0);
 }
 function doSave(){
-  const k=key(curYear,curMonth);
-  if(!data[k]) data[k]=[];
-  data[k].push({_id:Date.now().toString(),_ts:Date.now(),date:todayStr(),name:ins.name,amount:ins.amount,cat:ins.type});
-  saveData(); showMain(); renderMain(); showToast('Voce aggiunta ✓');
+  const today=new Date();
+  addEntry({
+    year:   curYear,
+    month:  curMonth,
+    date:   todayStr(),
+    name:   ins.name,
+    amount: ins.amount,
+    cat:    ins.type,
+    ts:     firebase.firestore.FieldValue.serverTimestamp()
+  });
+  showMain();
+  showToast('Voce aggiunta ✓');
 }
-
-loadData();
-renderMain();
 
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>{ navigator.serviceWorker.register('sw.js').catch(()=>{}); });
