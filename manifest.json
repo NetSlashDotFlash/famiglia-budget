@@ -6,21 +6,23 @@
   "start_url": "/famiglia-budget/index.html",
   "scope": "/famiglia-budget/",
   "display": "standalone",
+  "display_override": ["standalone", "minimal-ui", "browser"],
   "orientation": "portrait",
   "background_color": "#1a3d7a",
   "theme_color": "#1a3d7a",
   "lang": "it",
   "dir": "ltr",
   "categories": ["finance", "productivity"],
-  "iarc_rating_id": "",
+  "iarc_rating_id": "e84b072d-71b3-4d3e-86ae-31a8ce4e53b7",
   "prefer_related_applications": false,
+  "related_applications": [],
   "shortcuts": [
     {
       "name": "Aggiungi spesa",
       "short_name": "Aggiungi",
-      "description": "Aggiungi una nuova spesa",
+      "description": "Aggiungi una nuova spesa o entrata",
       "url": "/famiglia-budget/index.html",
-      "icons": [{ "src": "/famiglia-budget/icon-96.png", "sizes": "96x96" }]
+      "icons": [{ "src": "/famiglia-budget/icon-96.png", "sizes": "96x96", "type": "image/png" }]
     }
   ],
   "screenshots": [
@@ -29,7 +31,14 @@
       "sizes": "390x844",
       "type": "image/png",
       "form_factor": "narrow",
-      "label": "Schermata principale Budget Famiglia"
+      "label": "Schermata principale — saldo e transazioni"
+    },
+    {
+      "src": "/famiglia-budget/screenshot-wide.png",
+      "sizes": "1280x800",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Vista desktop — Budget Famiglia"
     }
   ],
   "icons": [
@@ -77,6 +86,12 @@
     },
     {
       "src": "/famiglia-budget/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/famiglia-budget/icon-512-maskable.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
