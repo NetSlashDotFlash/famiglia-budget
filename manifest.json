@@ -1,7 +1,8 @@
 {
+  "id": "/famiglia-budget/",
   "name": "Budget Famiglia",
   "short_name": "Budget",
-  "description": "Gestione spese familiari mensili",
+  "description": "Gestione spese familiari mensili. Tieni traccia di entrate e uscite, suddivise per categoria e data, con medie storiche e grafici.",
   "start_url": "/famiglia-budget/index.html",
   "scope": "/famiglia-budget/",
   "display": "standalone",
@@ -9,8 +10,28 @@
   "background_color": "#1a3d7a",
   "theme_color": "#1a3d7a",
   "lang": "it",
+  "dir": "ltr",
   "categories": ["finance", "productivity"],
-  "screenshots": [],
+  "iarc_rating_id": "",
+  "prefer_related_applications": false,
+  "shortcuts": [
+    {
+      "name": "Aggiungi spesa",
+      "short_name": "Aggiungi",
+      "description": "Aggiungi una nuova spesa",
+      "url": "/famiglia-budget/index.html",
+      "icons": [{ "src": "/famiglia-budget/icon-96.png", "sizes": "96x96" }]
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/famiglia-budget/screenshot-mobile.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Schermata principale Budget Famiglia"
+    }
+  ],
   "icons": [
     {
       "src": "/famiglia-budget/icon-72.png",
@@ -58,7 +79,7 @@
       "src": "/famiglia-budget/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "maskable"
     }
   ]
 }
